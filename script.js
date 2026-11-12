@@ -1,28 +1,31 @@
-// Assignment 1: Blacksmith — The Tiny Forge
 
-// PLAN: Write a short pseudocode plan for making a sword here.
+// Blacksmith - Assignment 3
 
-// PLAN:
-// Check if the forge has at least 30 heat.
-// If it does, use 30 heat and make one sword.
-// If it does not, keep the heat and sword count the same.
-// Show a message explaining what happened.
-// Update the forge display.
+// Plan:
+// - Get the buttons and the heat input.
+// - Check the heat amount before adding it.
+// - Use the game functions for the three actions.
+// - Update the page after each action.
 
-// 1. Select the forge, heat, sword count, status, image, and message elements.
-//    Find their IDs in index.html.
-const $forge = document.querySelector( "#forge");
+// Get the parts of the page that show the forge.
+const $forge = document.querySelector("#forge");
 const $heatValue = document.querySelector("#heat-value");
 const $swordCount = document.querySelector("#sword-count");
 const $forgeStatus = document.querySelector("#forge-status");
 const $forgeImage = document.querySelector("#forge-image");
 const $actionMessage = document.querySelector("#action-message");
 
-// 2. Create the two state variables: heat and swords made.
+// Get the controls.
+const $heatInput = document.querySelector("#heat-input");
+const $addHeatButton = document.querySelector("#add-heat-button");
+const $makeSwordButton = document.querySelector("#make-sword-button");
+const $resetForgeButton = document.querySelector("#reset-forge-button");
+
+// Starting values.
 let forgeHeat = 20;
 let swordsMade = 0;
 
-// 3. Write getForgeStatus(heatValue). Return the correct status string.
+// Check the forge status.
 function getForgeStatus(heatValue) {
   if (heatValue < 30) {
     return "Too cold";
@@ -33,9 +36,7 @@ function getForgeStatus(heatValue) {
   }
 }
 
-// 4. Write updateForge(). Update text and apply one status class.
-//    Change the supplied forge image src and alt to match the heat.
-//    Keep the most recent action message visible.
+// Update the numbers, status, and forge picture.
 function updateForge() {
   $heatValue.textContent = forgeHeat;
   $swordCount.textContent = swordsMade;
@@ -43,16 +44,19 @@ function updateForge() {
   const status = getForgeStatus(forgeHeat);
   $forgeStatus.textContent = status;
 
+  // Remove the old class before adding the new one.
   $forge.classList.remove("is-cold", "is-ready", "is-roaring");
 
   if (status === "Too cold") {
     $forge.classList.add("is-cold");
     $forgeImage.src = "assets/forge-cold.svg";
     $forgeImage.alt = "A stone forge with dark coals and no flames";
+
   } else if (status === "Ready to forge") {
     $forge.classList.add("is-ready");
     $forgeImage.src = "assets/forge-ready.svg";
     $forgeImage.alt = "A stone forge with a small orange fire";
+
   } else {
     $forge.classList.add("is-roaring");
     $forgeImage.src = "assets/forge-roaring.svg";
@@ -60,23 +64,20 @@ function updateForge() {
   }
 }
 
-// 5. Write resetForge(). Restore the state, message, and display.
+// Put everything back to the beginning.
 function resetForge() {
   forgeHeat = 20;
   swordsMade = 0;
 
-  $actionMessage.textContent = "Welcome to the forge. Add heat to begin.";
+  $heatInput.value = "";
+  $actionMessage.textContent = "";
 
   updateForge();
 }
 
-// 6. Write heatForge(amount). Add heat, cap it, and update the page.
+// Add heat, but don't go over 100.
 function heatForge(amount) {
-  forgeHeat += amount;
-
-  if (forgeHeat > 100) {
-    forgeHeat = 100;
-  }
+  forgeHeat = Math.min(forgeHeat + amount, 100);
 
   $actionMessage.textContent =
     `Heating complete. The forge is at ${forgeHeat} heat.`;
@@ -84,13 +85,14 @@ function heatForge(amount) {
   updateForge();
 }
 
-// 7. Write makeSword(). Handle both success and insufficient heat.
+// Make a sword if there's enough heat.
 function makeSword() {
   if (forgeHeat >= 30) {
     forgeHeat -= 30;
     swordsMade += 1;
 
     $actionMessage.textContent = "Sword crafted successfully.";
+
   } else {
     $actionMessage.textContent =
       "Not enough heat. Add more heat to make a sword.";
@@ -98,6 +100,39 @@ function makeSword() {
 
   updateForge();
 }
-// 8. Call resetForge() once to start the game.
+
+// Add heat button:
+// Read the number, check it, then add it if it's valid.
+$addHeatButton.addEventListener("click", function () {
+  const inputValue = $heatInput.value.trim();
+  const amount = Number(inputValue);
+
+  if (
+    inputValue === "" ||
+    !Number.isFinite(amount) ||
+    !Number.isInteger(amount) ||
+    amount <= 0
+  ) {
+    $actionMessage.textContent =
+      "Please enter a positive whole number.";
+    return;
+  }
+
+  heatForge(amount);
+});
+
+// Make sword button:
+// The function checks if there's enough heat.
+$makeSwordButton.addEventListener("click", function () {
+  makeSword();
+});
+
+// Reset button:
+// Start over and clear the message.
+$resetForgeButton.addEventListener("click", function () {
+  resetForge();
+});
+
+// Show the starting forge when the page opens.
 resetForge();
-// Use the tests in ASSIGNMENT.md to check your work.
+
